@@ -1,4 +1,4 @@
-package com.sam.tinttintdemo
+package com.sam.tintintdemo
 
 import org.junit.Test
 

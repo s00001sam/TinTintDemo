@@ -1,4 +1,4 @@
-package com.sam.tinttintdemo.ui.theme
+package com.sam.tintintdemo.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
