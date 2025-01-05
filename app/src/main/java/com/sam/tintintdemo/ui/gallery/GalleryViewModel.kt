@@ -2,15 +2,23 @@ package com.sam.tintintdemo.ui.gallery
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.sam.tintintdemo.data.GalleryData
 import com.sam.tintintdemo.data.State
+import com.sam.tintintdemo.source.pagingsource.GalleryPagingSource
 import com.sam.tintintdemo.source.repo.BaseRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -29,6 +37,15 @@ class GalleryViewModel @Inject constructor(
     private val _galleryDatum = MutableStateFlow<List<GalleryData>>(emptyList())
     val galleryDatum: StateFlow<List<GalleryData>>
         get() = _galleryDatum
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val galleryPagingFlow = galleryDatum.flatMapLatest {
+        if (it.isEmpty()) {
+            flowOf(PagingData.empty())
+        } else {
+            getGalleryPager(it).flow
+        }
+    }.cachedIn(viewModelScope)
 
     init {
         getGalleryDatum()
@@ -54,5 +71,15 @@ class GalleryViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun getGalleryPager(datum: List<GalleryData>) = Pager(
+        PagingConfig(
+            pageSize = 40,
+            initialLoadSize = 40,
+            prefetchDistance = 8,
+        )
+    ) {
+        GalleryPagingSource(datum)
     }
 }
