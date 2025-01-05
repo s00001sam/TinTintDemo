@@ -122,4 +122,8 @@ dependencies {
 
     // desugaring
     coreLibraryDesugaring(libs.android.desugaring)
+
+    // paging
+    implementation(libs.androidx.paging)
+    implementation(libs.compose.paging)
 }

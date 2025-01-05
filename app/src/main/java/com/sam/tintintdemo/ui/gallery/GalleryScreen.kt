@@ -10,9 +10,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -20,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.sam.tintintdemo.R
+import com.sam.tintintdemo.ui.LoadingIndicator
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,6 +35,8 @@ fun GalleryScreen(
     navController: NavController,
     viewModel: GalleryViewModel = hiltViewModel(),
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
@@ -54,11 +64,33 @@ fun GalleryScreen(
                     )
                 }
             )
+        },
+        snackbarHost = {
+            SnackbarHost(snackBarHostState) { data ->
+                Snackbar(
+                    containerColor = Color.Red,
+                    snackbarData = data,
+                )
+            }
         }
     ) { contentPadding ->
+        val errorMsg by viewModel.errorMessage.collectAsState("")
+        val isLoading by viewModel.isLoading.collectAsState(false)
+
+        LaunchedEffect(errorMsg) {
+            if (errorMsg.isNotEmpty()) {
+                snackBarHostState.showSnackbar(errorMsg)
+            }
+        }
+
         Box(
             modifier = Modifier
                 .padding(contentPadding)
+                .fillMaxSize(),
+        )
+
+        if (isLoading) LoadingIndicator(
+            modifier = Modifier
                 .fillMaxSize(),
         )
     }
