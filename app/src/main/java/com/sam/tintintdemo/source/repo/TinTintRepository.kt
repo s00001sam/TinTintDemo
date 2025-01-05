@@ -1,6 +1,7 @@
 package com.sam.tintintdemo.source.repo
 
-import com.sam.tintintdemo.data.GalleryData
+import com.sam.tintintdemo.data.MyGalleryData
+import com.sam.tintintdemo.data.MyGalleryData.Companion.toMyGalleryData
 import com.sam.tintintdemo.data.State
 import com.sam.tintintdemo.source.datasource.BaseDataSource
 import com.sam.tintintdemo.source.hilt.LocalData
@@ -18,14 +19,19 @@ class TinTintRepository @Inject constructor(
     @LocalData private val localDataSource: BaseDataSource,
     @RemoteData private val remoteDataSource: BaseDataSource,
 ) : BaseRepository {
-
-    override suspend fun getGalleryDatum(): Flow<State<List<GalleryData>>> {
+    /**
+     * 在 Repository 將 API 資料格式轉成 UI 資料格式的 Flow
+     */
+    override suspend fun getGalleryDatum(): Flow<State<List<MyGalleryData>>> {
         return flow {
             runCatching {
                 val response = remoteDataSource.getGalleryDatum()
                 when {
                     response.isSuccessful -> {
                         val datum = response.body().orEmpty()
+                            .map {
+                                it.toMyGalleryData()
+                            }
                         emit(State.Success(datum))
                     }
 

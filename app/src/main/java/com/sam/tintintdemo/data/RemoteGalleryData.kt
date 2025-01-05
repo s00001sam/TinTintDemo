@@ -4,8 +4,11 @@ import android.os.Parcelable
 import com.squareup.moshi.Json
 import kotlinx.parcelize.Parcelize
 
+/**
+ * 用於 API 串接的 Model
+ */
 @Parcelize
-data class GalleryData(
+data class RemoteGalleryData(
     @Json(name = "id") val _id: Int? = null,
     @Json(name = "albumId") val _albumId: Int? = null,
     @Json(name = "title") val _title: String? = null,

@@ -2,15 +2,18 @@ package com.sam.tintintdemo.source.pagingsource
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.sam.tintintdemo.data.GalleryData
+import com.sam.tintintdemo.data.MyGalleryData
 import retrofit2.HttpException
 import java.io.IOException
 
+/**
+ * 透過 Paging3 實現分頁機制
+ */
 class GalleryPagingSource(
-    private val datum: List<GalleryData>,
-) : PagingSource<Int, GalleryData>() {
+    private val datum: List<MyGalleryData>,
+) : PagingSource<Int, MyGalleryData>() {
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, GalleryData> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MyGalleryData> {
         return try {
             val key = params.key ?: 0
             val startIndex = key * params.loadSize
@@ -28,7 +31,7 @@ class GalleryPagingSource(
         }
     }
 
-    override fun getRefreshKey(state: PagingState<Int, GalleryData>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, MyGalleryData>): Int? {
         return state.anchorPosition
     }
 }

@@ -6,7 +6,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.sam.tintintdemo.data.GalleryData
+import com.sam.tintintdemo.data.MyGalleryData
 import com.sam.tintintdemo.data.State
 import com.sam.tintintdemo.source.pagingsource.GalleryPagingSource
 import com.sam.tintintdemo.source.repo.BaseRepository
@@ -34,8 +34,8 @@ class GalleryViewModel @Inject constructor(
     val errorMessage: SharedFlow<String>
         get() = _errorMessage
 
-    private val _galleryDatum = MutableStateFlow<List<GalleryData>>(emptyList())
-    val galleryDatum: StateFlow<List<GalleryData>>
+    private val _galleryDatum = MutableStateFlow<List<MyGalleryData>>(emptyList())
+    val galleryDatum: StateFlow<List<MyGalleryData>>
         get() = _galleryDatum
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -73,11 +73,11 @@ class GalleryViewModel @Inject constructor(
         }
     }
 
-    fun getGalleryPager(datum: List<GalleryData>) = Pager(
+    private fun getGalleryPager(datum: List<MyGalleryData>) = Pager(
         PagingConfig(
-            pageSize = 40,
-            initialLoadSize = 40,
-            prefetchDistance = 8,
+            pageSize = 60,
+            initialLoadSize = 60,
+            prefetchDistance = 20,
         )
     ) {
         GalleryPagingSource(datum)
