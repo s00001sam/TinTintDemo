@@ -3,6 +3,8 @@ package com.sam.tintintdemo.source.pagingsource
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.sam.tintintdemo.data.MyGalleryData
+import com.sam.tintintdemo.data.MyGalleryData.Companion.toMyGalleryData
+import com.sam.tintintdemo.source.datasource.BaseDataSource
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -10,19 +12,26 @@ import java.io.IOException
  * 透過 Paging3 實現分頁機制
  */
 class GalleryPagingSource(
-    private val datum: List<MyGalleryData>,
+    private val dataSource: BaseDataSource,
 ) : PagingSource<Int, MyGalleryData>() {
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MyGalleryData> {
         return try {
-            val key = params.key ?: 0
-            val startIndex = key * params.loadSize
-            val endIndex = minOf(startIndex + params.loadSize, datum.size)
+            val pageNumber = if (params is LoadParams.Refresh) 1 else params.key ?: 1
+            val response = dataSource.getGalleryDatum(
+                page = pageNumber,
+                limit = params.loadSize,
+            )
+            val datum = response.body()?.map {
+                it.toMyGalleryData()
+            }
+            val prevKey = if (pageNumber > 1) pageNumber - 1 else null
+            val nextKey = if (!datum.isNullOrEmpty()) pageNumber + 1 else null
 
-            return LoadResult.Page(
-                data = datum.subList(startIndex, endIndex),
-                prevKey = if (key > 0) key - 1 else null,
-                nextKey = if (endIndex < datum.size) key + 1 else null
+            LoadResult.Page(
+                data = datum.orEmpty(),
+                prevKey = prevKey,
+                nextKey = nextKey
             )
         } catch (e: IOException) {
             LoadResult.Error(e)

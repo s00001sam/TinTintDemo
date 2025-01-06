@@ -3,6 +3,7 @@ package com.sam.tintintdemo.ui.gallery
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -24,8 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.SubcomposeAsyncImage
@@ -93,13 +94,15 @@ fun GalleryScreen(
             }
         }
     ) { contentPadding ->
-        val errorMsg by viewModel.errorMessage.collectAsState("")
-        val isLoading by viewModel.isLoading.collectAsState(false)
         val lazyGalleryItems = viewModel.galleryPagingFlow.collectAsLazyPagingItems()
 
-        LaunchedEffect(errorMsg) {
-            if (errorMsg.isNotEmpty()) {
-                snackBarHostState.showSnackbar(errorMsg)
+        LaunchedEffect(lazyGalleryItems.loadState) {
+            (lazyGalleryItems.loadState.refresh as? LoadState.Error)?.error?.localizedMessage?.let {
+                snackBarHostState.showSnackbar(it)
+                return@LaunchedEffect
+            }
+            (lazyGalleryItems.loadState.append as? LoadState.Error)?.error?.localizedMessage?.let {
+                snackBarHostState.showSnackbar(it)
             }
         }
 
@@ -110,10 +113,12 @@ fun GalleryScreen(
             lazyGalleryItems = lazyGalleryItems,
         )
 
-        if (isLoading) LoadingIndicator(
-            modifier = Modifier
-                .fillMaxSize(),
-        )
+        if (lazyGalleryItems.loadState.refresh is LoadState.Loading) {
+            LoadingIndicator(
+                modifier = Modifier
+                    .fillMaxSize(),
+            )
+        }
     }
 }
 
@@ -134,6 +139,16 @@ fun GalleryContent(
                     .fillMaxWidth(),
                 data = galleryData,
             )
+        }
+
+        if (lazyGalleryItems.loadState.append is LoadState.Loading) {
+            item(span = { GridItemSpan(this.maxLineSpan) }) {
+                LoadingIndicator(
+                    modifier = Modifier.fillMaxSize(),
+                    padding = PaddingValues(vertical = 16.dp),
+                    size = 24.dp,
+                )
+            }
         }
     }
 }
