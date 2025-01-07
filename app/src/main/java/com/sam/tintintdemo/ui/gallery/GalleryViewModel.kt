@@ -11,7 +11,5 @@ import javax.inject.Inject
 class GalleryViewModel @Inject constructor(
     private val repository: BaseRepository,
 ) : ViewModel() {
-
     val galleryPagingFlow = repository.getGalleryFlow().cachedIn(viewModelScope)
-
 }
